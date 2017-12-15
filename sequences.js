@@ -51,12 +51,12 @@ d3.text("label_industry.csv", function(text) {
   
   var csv = d3.csvParseRows(text);
   var json = getQWIData(csv, indicator, state, year, quarter);
+
   
-   $(document).ajaxStop(function () {
-      //console.log(json);
-      //var t1 = performance.now();
-      //console.log("data load took " + (t1 - t0) + " milliseconds.")
-      createVisualization(json)
+  $(document).ajaxStop(function () {
+    //var t1 = performance.now();
+    //console.log("data load took " + (t1 - t0) + " milliseconds.")
+    createVisualization(json)
   });
   
 });
@@ -109,7 +109,7 @@ function mouseover(d) {
   if (percentage < 0.1) {
     percentageString = "< 0.1%";
   }
-  var naicscountString = d.data.size;
+  var naicscountString = d.value;
 
   d3.select("#percentage")
     .text(percentageString);
@@ -334,42 +334,56 @@ function buildHierarchyAsync(indicator, statusIndicator, urlString, industryDict
         });
 
         // tack on remainder if there are suppressed grandchildren
-        //if (grandchildTotal < child.size){
-        //  var newgrandchild = {}
-        //  newgrandchild["name"] = "supressed"
-        //  newgrandchild["size"] = parseInt(child.size) - grandchildTotal
-        //  child.children.push(newgrandchild)
-        //}
+        if (grandchildTotal < child.size){
+          var newgrandchild = {}
+          newgrandchild["name"] = "supressed"
+          newgrandchild["label"] = "supressed"
+          newgrandchild["size"] = parseInt(child.size) - grandchildTotal
+          child.children.push(newgrandchild)
+        }
         
         // if children exist delete the known size as it's already accounted for
         // children will exist with values and any remainder will be accounted for
         if (child.children.length == 0){
           delete child.children;
-        } //else {
-          //delete child.size;
-        //}
+        } else {
+          delete child.size;
+        }
       });
       
       
       // create a value in the children incase of suppression differences
       var childrenTotal = 0
       for (var i = 0; i < children.length; i++){
-        childrenTotal += (isNaN(children[i].size) ? 0 : children[i].size);
+        for (var j = 0; j < children[i]["children"].length; j++) {
+          var gchild = children[i]["children"][j]
+          childrenTotal += (isNaN(gchild.size) ? 0 : gchild.size);
+        }
       }
-      
+
       // the full value of the parent size is maintained in thechildren
-      //if (childrenTotal < parent.size){
-      //  var child = {}
-      //  child["name"] = "supressed"
-      //  child["size"] = parseInt(parent.size - childrenTotal)
-      //  children.push(child);
-      //}
+
+      if (childrenTotal < parent.size){
+        var child = {}
+        child["name"] = "supressed"
+        child["label"] = "supressed"
+        child["size"] = parseInt(parent.size) - childrenTotal;
+        children.push(child);
+      }
       
       //create object in d3 treemap format
       dataObj["size"] = parent["size"];
       dataObj["name"] = parent["name"];
       dataObj["children"] = children
       dataObj["label"] = industryDict[dataObj["name"]]
+
+      // if children exist delete the known size as it's already accounted for
+      // children will exist with values and any remainder will be accounted for
+      if (dataObj.children.length == 0){
+        delete dataObj.children;
+      } else {
+        delete dataObj.size;
+      }
     }
   });
   
