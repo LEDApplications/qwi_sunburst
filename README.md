@@ -1,3 +1,5 @@
-# hierarchical_sunburst
+# qwi_sunburst
 
-Some test d3 code showing a single state full naics components through the census api. See the gh-pages branch or check the working github.io page at https://jodyhoonstarr.github.io/hierarchical_sunburst/
+An demo using the Census public API and d3 to display nested 2, 3, and 4-digit NAICS employment from the QWI dataset (indicator: Emp, state:AK, qtime: 2012Q1)
+
+https://ledapplications.github.io/qwi_sunburst/
